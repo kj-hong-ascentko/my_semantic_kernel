@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from logging import Logger
 from typing import Any, Dict, Optional
+from semantic_kernel.kernel_config import KernelConfig
 
 class KernelBase(ABC):
     @property
