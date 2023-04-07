@@ -4,13 +4,7 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-
-class MemoryStoreBase:
-    def put_value_async():
-        ...
-
-    def get_nearest_matches_async():
-        ...
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 class SemanticTextMemory(SemanticTextMemoryBase):
     _storage: MemoryStoreBase
