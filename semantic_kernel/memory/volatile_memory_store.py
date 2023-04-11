@@ -7,8 +7,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.storage.volatile_data_store import VolatileDataStore
 
-class NullLogger:
-    ...
+from semantic_kernel.utils.null_logger import NullLogger
     
 class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
     def __init__(self, logger: Optional[Logger] = None) -> None:

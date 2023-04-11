@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
-from semantic_kernel.memory.stotage.data_entry import DataEntry
+from semantic_kernel.memory.storage.data_entry import DataEntry
 
 class DataStoreBase(ABC):
     @abstractmethod
