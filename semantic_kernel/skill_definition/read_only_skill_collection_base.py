@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 
-class SKFuntionBase:
-    ...
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 class FunctionView:
     ...

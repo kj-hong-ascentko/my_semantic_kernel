@@ -4,6 +4,8 @@ from typing import Any, Dict, Optional
 from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import PromptTemplatingEngine
+from semantic_kernel.skill_definition.read_only_skill_collection_base import ReadOnlySkillCollectionBase
+
 class KernelBase(ABC):
     @property
     @abstractmethod
