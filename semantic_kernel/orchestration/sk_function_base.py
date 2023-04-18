@@ -9,14 +9,16 @@ class TextCompletionClientBase:
 
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 
-class ContextVariables:
-    ...
+from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.sk_context import SKContext
 
-class SKContext:
-    ...
 class FunctionView:
     ...
 
+if TYPE_CHECKING:
+    from semantic_kernel.skill_definition.read_only_skill_collection_base import (
+        ReadOnlySkillCollectionBase,
+    )
 
 class SKFuntionBase(ABC):
     FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
