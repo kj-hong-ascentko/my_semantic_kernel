@@ -4,11 +4,8 @@ from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
     ...
 
-class SKContext:
-    ...
-
-class ParameterView:
-    ...
+from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.skill_definition.parameter_view import ParameterView
 
 class PromptTemplateBase(ABC):
     @abstractmethod

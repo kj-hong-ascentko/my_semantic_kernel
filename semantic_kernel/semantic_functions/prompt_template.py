@@ -3,9 +3,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from semantic_kernel.semantic_functions.prompt_template_base import PromptTemplateBase
 from semantic_kernel.semantic_functions.prompt_template_config import PromptTemplateConfig
-
-class ParameterView:
-    ...
+from semantic_kernel.skill_definition.parameter_view import ParameterView
 
 class BlockTypes:
     ...
