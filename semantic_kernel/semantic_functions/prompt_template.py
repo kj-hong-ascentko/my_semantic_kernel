@@ -5,19 +5,14 @@ from semantic_kernel.semantic_functions.prompt_template_base import PromptTempla
 from semantic_kernel.semantic_functions.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.skill_definition.parameter_view import ParameterView
 
-class BlockTypes:
-    ...
+from semantic_kernel.template_engine.protocols.prompt_templating_engine import PromptTemplatingEngine
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
-class VarBlock:
-    ...
-
-class PromptTemplatingEngine:
-    ...
 
 from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.orchestration.sk_context import SKContext
 
-class SKContext:
-    ...    
 
 class PromptTemplate(PromptTemplateBase):
     _template: str

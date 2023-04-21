@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-class BlackTypes(Enum):
+class BlockTypes(Enum):
     UNDEFINED = auto()
     TEXT = auto()
     CODE = auto()

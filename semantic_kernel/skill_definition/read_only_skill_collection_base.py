@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
-class FunctionView:
-    ...
 
 class ReadOnlySkillCollectionBase(ABC):
     @abstractmethod
@@ -35,5 +33,5 @@ class ReadOnlySkillCollectionBase(ABC):
         pass
 
     @abstractmethod
-    def get_funtion(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
+    def get_function(self, skill_name: Optional[str], function_name: str) -> "SKFunctionBase":
         pass

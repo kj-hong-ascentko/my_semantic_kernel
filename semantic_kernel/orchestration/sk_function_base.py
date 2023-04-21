@@ -14,7 +14,7 @@ if TYPE_CHECKING:
         ReadOnlySkillCollectionBase,
     )
 
-class SKFuntionBase(ABC):
+class SKFunctionBase(ABC):
     FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]*$"
     SKILL_NAME_REGEX = r"^[0-9A-Za-z_]*$"

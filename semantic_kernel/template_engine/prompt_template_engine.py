@@ -1,31 +1,19 @@
 from logging import Logger
 from typing import List, Optional
 
-class ContextVariables:
-    ...
-
-class SKContext:
-    ...
-
-class Block:
-    ...
-
-class BlockTypes:
-    ...
-
-class TextBlock:
-    ...
-
-class CodeRenderer:
-    ...
-
+from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import PromptTemplatingEngine
-
-class TextRenderer:
-    ...
-
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
+from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
+from semantic_kernel.template_engine.blocks.text_block import TextBlock
+#from semantic_kernel.template_engine.blocks.code_block import CodeBlock
+from semantic_kernel.orchestration.context_variables import ContextVariables
 class TemplateTokenizer:
     ...
+    
+from semantic_kernel.template_engine.protocols.prompt_templating_engine import PromptTemplatingEngine
 from semantic_kernel.utils.null_logger import NullLogger
 
 class PromptTemplateEngine(PromptTemplatingEngine):
