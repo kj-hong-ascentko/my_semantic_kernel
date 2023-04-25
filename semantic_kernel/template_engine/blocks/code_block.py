@@ -9,8 +9,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.orchestration.sk_context import SKContext
-class FunctionIdBlock:
-    ...
+from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 
 class CodeTokenizer:
     ...
