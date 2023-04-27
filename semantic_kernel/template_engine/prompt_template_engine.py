@@ -8,11 +8,9 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
-#from semantic_kernel.template_engine.blocks.code_block import CodeBlock
+from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.orchestration.context_variables import ContextVariables
-class TemplateTokenizer:
-    ...
-    
+from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer    
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import PromptTemplatingEngine
 from semantic_kernel.utils.null_logger import NullLogger
 

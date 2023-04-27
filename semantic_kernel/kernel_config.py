@@ -5,14 +5,9 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 
-class ChatCompletionClientBase:
-    ...
-    
-class TextCompletionClientBase:
-    ...
-
-class EmbeddingGeneratorBase:
-    ...
+from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase    
+from semantic_kernel.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
 
 class PassThroughWithoutRetry:
     ...

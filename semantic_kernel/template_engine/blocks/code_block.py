@@ -10,9 +10,7 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
-
-class CodeTokenizer:
-    ...
+from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 
 class CodeBlock(Block, CodeRenderer):
