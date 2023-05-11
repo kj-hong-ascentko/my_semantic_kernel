@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from logging import Logger
 from typing import Any, Dict, Optional
-from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import PromptTemplatingEngine
 from semantic_kernel.skill_definition.read_only_skill_collection_base import ReadOnlySkillCollectionBase
@@ -12,11 +11,6 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 
 
 class KernelBase(ABC):
-    @property
-    @abstractmethod
-    def config(self) -> KernelConfig:
-        pass
-    
     @property
     @abstractmethod
     def logger(self) -> Logger:
@@ -57,17 +51,13 @@ class KernelBase(ABC):
         pass
 
     @abstractmethod
-    async def run_on_str_async(self, input_str: str, *args: Any) -> SKContext:
-        pass
-    
-    @abstractmethod
-    async def run_on_vars_async(
-        self, input_vars: ContextVariables, *args: Any
+    async def run_async(
+        self,
+        *functions: Any,
+        input_context: Optional[SKContext],
+        input_vars: Optional[ContextVariables],
+        input_str: Optional[str]
     ) -> SKContext:
-        pass
-    
-    @abstractmethod
-    async def run_async(self, *args: Any) -> SKContext:
         pass
     
     @abstractmethod
