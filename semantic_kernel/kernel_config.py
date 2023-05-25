@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import Em
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
-from semantic_kernel.reliability.retry_mechanism import RetryMechanism
+from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 
 
 class KernelConfig:
@@ -29,7 +29,7 @@ class KernelConfig:
         self._default_chat_backend: Optional[str] = None
         self._default_embedding_backend: Optional[str] = None
         
-        self._retry_mechanism: RetryMechanism = PassThroughWithoutRetry()
+        self._retry_mechanism: RetryMechanismBase = PassThroughWithoutRetry()
     
     def get_ai_backend(
         self, type: Type[T], service_id: Optional[str] = None
