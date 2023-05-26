@@ -210,3 +210,375 @@ class Kernel:
 
         return self.skills.get_semantic_function(skill_name, function_name)
 
+    def use_memory(
+        self, storage: MemoryStoreBase,
+        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
+    ) -> None:
+        if embeddings_generator is None:
+            service_id = self.get_text_embedding_generation_service_id()
+            if not service_id:
+                raise ValueError("The embedding service id cannot be `None` or empty")
+        
+            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
+            if not embeddings_service:
+                raise ValueError(f"AI configuration is missing for: {service_id}")
+                        
+            embeddings_generator = embeddings_service(self)
+            
+        if storage is None:
+            raise ValueError("The storage instance provided cannot be `None`")
+        if embeddings_generator is None:
+            raise ValueError("The embedding generator cannot be `None`")
+
+        self.register_memory(SemanticTextMemory(storage, embeddings_generator))
+
+    def register_memory(self, memory: SemanticTextMemory):
+        self._memory = memory
+    
+    def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
+        self.use_memory(memory_store)
+    
+    def create_new_context(self) -> SKContext:
+        return SKContext(
+            ContextVariables(),
+            self._memory,
+            self.skills,
+            self._log,            
+        )
+
+    def import_skill(        
+        self,
+        skill_instance: Any,
+        skill_name: str = ""
+    ) -> Dict[str, SKFunctionBase]:
+        if skill_name.strip() == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+            self._log.debug(f"Importing skill {skill_name} into the global namespace")        
+        else:            
+            self._log.debug(f"Importing skill {skill_name}")            
+        
+        functions = []
+        for _, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
+            if not hasattr(candidate, "__sk_function__"):
+                continue
+            functions.append(
+                SKFunction.from_native_method(candidate, skill_name, self.logger)
+            )
+        self.logger.debug(f"Methods imported: {len(functions)}")
+        
+        # Uniqueness check on function names
+        function_names = [f.name for f in functions]
+        if len(function_names) != len(set(function_names)):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, "
+                "please differentiate function names.",
+            )
+        
+            
+        skill = {}
+        for function in functions:
+            function.set_default_skill_collection(self.skills)
+            self._skill_collection.add_native_function(function)
+            skill[function.name] = function
+        
+        return skill
+
+    def get_ai_service(
+        self, type: Type[T], service_id: Optional[str] = None
+    ) -> Callable[["Kernel"], T]:
+        matching_type = {}
+        if type == TextCompletionClientBase:
+            service_id = service_id or self._default_text_completion_service
+            matching_type = self._text_completion_services
+        elif type == ChatCompletionClientBase:
+            service_id = service_id or self._default_chat_service
+            matching_type = self._chat_services
+        elif type == EmbeddingGeneratorBase:
+            service_id = service_id or self._default_text_embedding_generation_service
+            matching_type = self._text_embedding_generation_services
+        else:
+            raise ValueError(f"Unknown AI service type: {type.__name__}")
+
+        if service_id not in matching_type:
+            raise ValueError(
+                f"{type.__name__} service with service_id '{service_id}' not found"
+            )
+
+        return matching_type[service_id]
+
+    def all_text_completion_services(self) -> List[str]:
+        return list(self._text_completion_services.keys())
+
+    def all_chat_services(self) -> List[str]:
+        return list(self._chat_services.keys())
+
+    def all_text_embedding_generation_services(self) -> List[str]:
+        return list(self._text_embedding_generation_services.keys())
+
+    def add_text_completion_service(
+        self,
+        service_id: str,
+        service: Union[
+          TextCompletionClientBase, Callable[["Kernel"], TextCompletionClientBase]  
+        ],
+        overwrite: bool = True,
+    ) -> "Kernel":
+        if not service_id:
+            raise ValueError("service_id must be a non-empty string")
+        if not overwrite and service_id in self._text_completion_services:
+            raise ValueError(
+                f"Text service with service_id '{service_id}' already exists"
+            )
+        self._text_completion_services[service_id] = (
+            service if isinstance(service, Callable) else lambda _: service
+        )        
+        if self._default_text_completion_service is None:
+            self._default_text_completion_service = service_id
+
+        return self
+    
+    def add_chat_service(
+        self,
+        service_id: str,
+        service: Union[
+            ChatCompletionClientBase, Callable[["Kernel"], ChatCompletionClientBase]
+        ],
+        overwrite: bool = True,
+    ) -> "Kernel":
+        if not service_id:
+            raise ValueError("service_id must be a non-empty string")
+        if not overwrite and service_id in self._chat_services:
+            raise ValueError(
+                f"Chat service with service_id '{service_id}' already exists"
+            )
+
+        self._chat_services[service_id] = (
+            service if isinstance(service, Callable) else lambda _: service
+        )
+        if self._default_chat_service is None:
+            self._default_chat_service = service_id
+
+        if isinstance(service, TextCompletionClientBase):
+            self.add_text_completion_service(service_id, service)
+            if self._default_text_completion_service is None:
+                self._default_text_completion_service = service_id
+
+        return self
+
+    def add_text_embedding_generation_service(
+        self,
+        service_id: str,
+        service: Union[
+            EmbeddingGeneratorBase, Callable[["Kernel"], EmbeddingGeneratorBase]
+        ],
+        overwrite: bool = False,
+    ) -> "Kernel":
+        if not service_id:
+            raise ValueError("service_id must be a non-empty string")
+        if not overwrite and service_id in self._text_embedding_generation_services:
+            raise ValueError(
+                f"Embedding service with service_id '{service_id}' already exists"
+            )
+
+        self._text_embedding_generation_services[service_id] = (
+            service if isinstance(service, Callable) else lambda _: service
+        )
+        if self._default_text_embedding_generation_service is None:
+            self._default_text_embedding_generation_service = service_id
+
+        return self
+
+    def set_default_text_completion_service(self, service_id: str) -> "Kernel":
+        if service_id not in self._text_completion_services:
+            raise ValueError(
+                f"AI service with service_id '{service_id}' does not exist"
+            )
+
+        self._default_text_completion_service = service_id
+        return self
+
+    def set_default_chat_service(self, service_id: str) -> "Kernel":
+        if service_id not in self._chat_services:
+            raise ValueError(
+                f"AI service with service_id '{service_id}' does not exist"
+            )
+
+        self._default_chat_service = service_id
+        return self
+
+    def set_default_text_embedding_generation_service(
+        self, service_id: str
+    ) -> "Kernel":
+        if service_id not in self._text_embedding_generation_services:
+            raise ValueError(
+                f"AI service with service_id '{service_id}' does not exist"
+            )
+
+        self._default_text_embedding_generation_service = service_id
+        return self
+    
+    def get_text_completion_service_service_id(
+        self, service_id: Optional[str] = None
+    ) -> str:
+        if service_id is None or service_id not in self._text_completion_services:
+            if self._default_text_completion_service is None:
+                raise ValueError("No default text service is set")
+            return self._default_text_completion_service
+
+        return service_id
+
+    def get_chat_service_service_id(self, service_id: Optional[str] = None) -> str:
+        if service_id is None or service_id not in self._chat_services:
+            if self._default_chat_service is None:
+                raise ValueError("No default chat service is set")
+            return self._default_chat_service
+
+        return service_id
+
+    def get_text_embedding_generation_service_id(
+        self, service_id: Optional[str] = None
+    ) -> str:
+        if (
+            service_id is None
+            or service_id not in self._text_embedding_generation_services
+        ):
+            if self._default_text_embedding_generation_service is None:
+                raise ValueError("No default embedding service is set")
+            return self._default_text_embedding_generation_service
+
+        return service_id
+
+    def remove_text_completion_service(self, service_id: str) -> "Kernel":
+        if service_id not in self._text_completion_services:
+            raise ValueError(
+                f"AI service with service_id '{service_id}' does not exist"
+            )
+
+        del self._text_completion_services[service_id]
+        if self._default_text_completion_service == service_id:
+            self._default_text_completion_service = next(
+                iter(self._text_completion_services), None
+            )
+        return self
+
+    def remove_chat_service(self, service_id: str) -> "Kernel":
+        if service_id not in self._chat_services:
+            raise ValueError(
+                f"AI service with service_id '{service_id}' does not exist"
+            )
+
+        del self._chat_services[service_id]
+        if self._default_chat_service == service_id:
+            self._default_chat_service = next(iter(self._chat_services), None)
+        return self
+
+    def remove_text_embedding_generation_service(self, service_id: str) -> "Kernel":
+        if service_id not in self._text_embedding_generation_services:
+            raise ValueError(
+                f"AI service with service_id '{service_id}' does not exist"
+            )
+
+        del self._text_embedding_generation_services[service_id]
+        if self._default_text_embedding_generation_service == service_id:
+            self._default_text_embedding_generation_service = next(
+                iter(self._text_embedding_generation_services), None
+            )
+        return self
+
+    def clear_all_text_completion_services(self) -> "Kernel":
+        self._text_completion_services = {}
+        self._default_text_completion_service = None
+        return self
+
+    def clear_all_chat_services(self) -> "Kernel":
+        self._chat_services = {}
+        self._default_chat_service = None
+        return self
+
+    def clear_all_text_embedding_generation_services(self) -> "Kernel":
+        self._text_embedding_generation_services = {}
+        self._default_text_embedding_generation_service = None
+        return self
+
+    def clear_all_services(self) -> "Kernel":
+        self._text_completion_services = {}
+        self._chat_services = {}
+        self._text_embedding_generation_services = {}
+
+        self._default_text_completion_service = None
+        self._default_chat_service = None
+        self._default_text_embedding_generation_service = None
+
+        return self
+
+    def _create_semantic_function(
+        self,
+        skill_name: str,
+        function_name: str,
+        function_config: SemanticFunctionConfig,        
+    ) -> SKFunctionBase:
+        function_type = function_config.prompt_template_config.type
+        if not function_type == "completion":
+            raise AIException(
+                AIException.ErrorCodes.FunctionTypeNotSupported,
+                f"Function type not supported: {function_type}",
+            )    
+
+        function = SKFunction.from_semantic_config(
+            skill_name, function_name, function_config
+        )
+        function.request_settings.update_from_completion_config(
+            function_config.prompt_template_config.completion
+        )
+        
+        function.set_default_skill_collection(self.skills)
+        
+        if function_config.has_chat_prompt:
+            service = self.get_ai_service(
+                ChatCompletionClientBase,
+                function_config.prompt_template_config.default_services[0]
+                if len(function_config.prompt_template_config.default_services) > 0
+                else None,
+            )            
+
+            function.set_chat_configuration(
+                ChatRequestSettings.from_completion_config(
+                    function_config.prompt_template_config.completion
+                )
+            )
+            
+            if service is None:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    "Could not load chat service, unable to prepare semantic function. "
+                    "Function description: "
+                    "{function_config.prompt_template_config.description}",
+                )
+
+            function.set_chat_service(lambda: service(self))            
+        else:
+            service = self.get_ai_service(
+                TextCompletionClientBase,
+                function_config.prompt_template_config.default_services[0]
+                if len(function_config.prompt_template_config.default_services) > 0
+                else None,
+            )
+
+            function.set_ai_configuration(
+                CompleteRequestSettings.from_completion_config(
+                    function_config.prompt_template_config.completion
+                )
+            )
+
+            if service is None:
+                raise AIException(
+                    AIException.ErrorCodes.InvalidConfiguration,
+                    "Could not load text service, unable to prepare semantic function. "
+                    "Function description: "
+                    "{function_config.prompt_template_config.description}",
+                )
+
+            function.set_ai_service(lambda: service(self))
+
+        return function
